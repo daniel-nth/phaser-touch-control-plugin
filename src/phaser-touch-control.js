@@ -39,6 +39,9 @@
 		Phaser.Plugin.call(this, game, parent);
 		this.input = this.game.input;
 
+		// Reference to the pointer controlling the joystick.
+		this.pointer = null;
+
 		this.imageGroup = [];
 	};
 
@@ -103,57 +106,63 @@
 	};
 
 	var initialPoint;
-	var createCompass = function(){
-		this.imageGroup.forEach(function (e) {
-			e.visible=true;
-			e.bringToTop();
-			
-			e.cameraOffset.x=this.input.worldX;
-			e.cameraOffset.y=this.input.worldY;
-			
-		}, this);
-		
-		this.preUpdate=setDirection.bind(this);
+	var createCompass = function(pointer){
+		if(!this.pointer) {
+			this.pointer = pointer;
 
-		initialPoint=this.input.activePointer.position.clone();
-		
+			this.imageGroup.forEach(function (e) {
+				e.visible=true;
+				e.bringToTop();
+
+				e.cameraOffset.x=this.input.worldX;
+				e.cameraOffset.y=this.input.worldY;
+
+			}, this);
+
+			this.preUpdate=setDirection.bind(this);
+
+			initialPoint=this.pointer.position.clone();
+		}
 	};
-	var removeCompass = function () {
-		this.imageGroup.forEach(function(e){
-			e.visible = false;
-		});
+	var removeCompass = function (pointer) {
+		if(pointer === this.pointer) {
+			this.pointer = null;
+			this.imageGroup.forEach(function(e){
+				e.visible = false;
+			});
 
-		this.cursors.up = false;
-		this.cursors.down = false;
-		this.cursors.left = false;
-		this.cursors.right = false;
-		
-		this.speed.x = 0;
-		this.speed.y = 0;
-		
-		this.preUpdate=empty;
+			this.cursors.up = false;
+			this.cursors.down = false;
+			this.cursors.left = false;
+			this.cursors.right = false;
+
+			this.speed.x = 0;
+			this.speed.y = 0;
+
+			this.preUpdate=empty;
+		}
 	};
 	
 	var empty = function(){
 	};
 
 	var setDirection = function() {
-		var d=initialPoint.distance(this.input.activePointer.position);
+		var d=initialPoint.distance(this.pointer.position);
 		var maxDistanceInPixels = this.settings.maxDistanceInPixels;
 
-		var deltaX=this.input.activePointer.position.x-initialPoint.x;
-		var deltaY=this.input.activePointer.position.y-initialPoint.y;
+		var deltaX=this.pointer.position.x-initialPoint.x;
+		var deltaY=this.pointer.position.y-initialPoint.y;
 
 		if(this.settings.singleDirection){
 			if(Math.abs(deltaX) > Math.abs(deltaY)){
 				deltaY = 0;
-				this.input.activePointer.position.y=initialPoint.y;
+				this.pointer.position.y=initialPoint.y;
 			}else{
 				deltaX = 0;
-				this.input.activePointer.position.x=initialPoint.x;
+				this.pointer.position.x=initialPoint.x;
 			}
 		}
-		var angle = initialPoint.angle(this.input.activePointer.position);
+		var angle = initialPoint.angle(this.pointer.position);
 		
 		
 		if(d>maxDistanceInPixels){

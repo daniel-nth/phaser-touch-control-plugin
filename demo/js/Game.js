@@ -35,7 +35,8 @@
     BasicGame.Game.prototype = {
         create: function () {
 
-            this.game.touchControl = this.game.plugins.add(Phaser.Plugin.TouchControl);
+            // Pass the image identifiers to the plugin. The segment is optional. Atlases in the form ['identifier', 'frame'] should work
+            this.game.touchControl = this.game.plugins.add(Phaser.Plugin.TouchControl, 'compass', 'touch', 'touch_segment');
             this.game.touchControl.inputEnable();
 
             this.tilesprite = this.add.tileSprite(0, 0, this.world.width, this.world.height, 'background');

@@ -40,17 +40,6 @@
 		this.input = this.game.input;
 
 		this.imageGroup = [];
-
-		this.imageGroup.push(this.game.add.sprite(0, 0, 'compass'));
-		this.imageGroup.push(this.game.add.sprite(0, 0, 'touch_segment'));
-		this.imageGroup.push(this.game.add.sprite(0, 0, 'touch_segment'));
-		this.imageGroup.push(this.game.add.sprite(0, 0, 'touch'));
-		
-		this.imageGroup.forEach(function (e) {
-			e.anchor.set(0.5);
-			e.visible=false;
-			e.fixedToCamera=true;
-		});
 	};
 
 	//Extends the Phaser.Plugin template, setting up values we need
@@ -60,9 +49,40 @@
 	Phaser.Plugin.TouchControl.prototype.settings = {
 		// max distance from itial touch
 		maxDistanceInPixels: 200,
-		singleDirection: false
+		singleDirection: false,
+		numberOfSegments: 2
 	};
-	
+
+	Phaser.Plugin.TouchControl.prototype.init = function(baseImage, touchImage, segmentImage) {
+		if(Array.isArray(baseImage)) {
+			this.imageGroup.push(this.game.add.image(0, 0, baseImage[0], baseImage[1]));
+		} else if(typeof baseImage === 'string') {
+			this.imageGroup.push(this.game.add.image(0, 0, baseImage));
+		}
+
+		if(this.settings.numberOfSegments > 0 && segmentImage) {
+			for(var i = 0; i < this.settings.numberOfSegments; i++) {
+				if(Array.isArray(segmentImage)) {
+					this.imageGroup.push(this.game.add.image(0, 0, segmentImage[0], segmentImage[1]));
+				} else if(typeof segmentImage === 'string') {
+					this.imageGroup.push(this.game.add.image(0, 0, segmentImage));
+				}
+			}
+		}
+
+		if(Array.isArray(touchImage)) {
+			this.imageGroup.push(this.game.add.image(0, 0, touchImage[0], touchImage[1]));
+		} else if(typeof touchImage === 'string') {
+			this.imageGroup.push(this.game.add.image(0, 0, touchImage));
+		}
+
+		this.imageGroup.forEach(function (e) {
+			e.anchor.set(0.5);
+			e.visible=false;
+			e.fixedToCamera=true;
+		});
+
+	};
 
 	Phaser.Plugin.TouchControl.prototype.cursors = {
 		up: false, down: false, left: false, right: false
@@ -151,8 +171,8 @@
 		this.cursors.right = (deltaX > 0);
 		
 		this.imageGroup.forEach(function(e,i){
-			e.cameraOffset.x = initialPoint.x+(deltaX)*i/3;
-			e.cameraOffset.y = initialPoint.y+(deltaY)*i/3;
+			e.cameraOffset.x = initialPoint.x+(deltaX)*i/(this.imageGroup.length-1);
+			e.cameraOffset.y = initialPoint.y+(deltaY)*i/(this.imageGroup.length-1);
 		}, this);
 		
 	};

@@ -35,7 +35,7 @@
     BasicGame.Game.prototype = {
         create: function () {
 
-            // Pass the image identifiers to the plugin. The segment is optional. Atlases in the form ['identifier', 'frame'] should work
+            // Pass the image keys to the plugin. The segment is optional. Atlases in the form ['key', 'frame'] should work
             this.game.touchControl = this.game.plugins.add(Phaser.Plugin.TouchControl, 'compass', 'touch', 'touch_segment');
             this.game.touchControl.inputEnable();
 

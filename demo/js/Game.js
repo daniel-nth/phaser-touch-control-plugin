@@ -30,7 +30,7 @@
 
     var easeInSpeed = function(x){
         return x * Math.abs(x) / 2000;
-    }
+    };
 
     BasicGame.Game.prototype = {
         create: function () {

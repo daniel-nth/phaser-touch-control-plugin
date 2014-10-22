@@ -43,6 +43,10 @@
 		this.pointer = null;
 
 		this.imageGroup = [];
+
+		this.fixedToPosition = false;
+		this.x = null;
+		this.y = null;
 	};
 
 	//Extends the Phaser.Plugin template, setting up values we need
@@ -50,7 +54,7 @@
 	Phaser.Plugin.TouchControl.prototype.constructor = Phaser.Plugin.TouchControl;
 
 	Phaser.Plugin.TouchControl.prototype.settings = {
-		// max distance from itial touch
+		// max distance from initial touch or fixed position
 		maxDistanceInPixels: 200,
 		singleDirection: false,
 		numberOfSegments: 2
@@ -95,41 +99,81 @@
 		x:0, y:0
 	};
 
-	Phaser.Plugin.TouchControl.prototype.inputEnable = function() {
-		this.input.onDown.add(createCompass, this);
-		this.input.onUp.add(removeCompass, this);
+	Phaser.Plugin.TouchControl.prototype.inputEnable = function(x, y) {
+		this.x = x;
+		this.y = y;
+		this.fixedToPosition = this.x !== null && this.y !== null;
+
+		if(this.fixedToPosition) {
+			this.showCompass();
+		}
+
+		this.input.onDown.add(connectCompass, this);
+		this.input.onUp.add(disconnectCompass, this);
 	};
 
 	Phaser.Plugin.TouchControl.prototype.inputDisable = function() {
-		this.input.onDown.remove(createCompass, this);
-		this.input.onUp.remove(removeCompass, this);
+		this.input.onDown.remove(connectCompass, this);
+		this.input.onUp.remove(disconnectCompass, this);
+	};
+
+	Phaser.Plugin.TouchControl.prototype.showCompass = function() {
+		this.imageGroup.forEach(function (e) {
+			e.visible = true;
+			e.bringToTop();
+
+			if(this.x !== null && this.y !== null) {
+				e.cameraOffset.x = this.x;
+				e.cameraOffset.y = this.y;
+			} else if(this.pointer) {
+				e.cameraOffset.x = this.pointer.worldX;
+				e.cameraOffset.y = this.pointer.worldY;
+			}
+
+		}, this);
+	};
+
+	Phaser.Plugin.TouchControl.prototype.hideCompass = function() {
+		this.imageGroup.forEach(function(e){
+			e.visible = false;
+		});
 	};
 
 	var initialPoint;
-	var createCompass = function(pointer){
+	var connectCompass = function(pointer){
 		if(!this.pointer) {
+			if(this.fixedToPosition && (
+				pointer.position.x > this.x + this.settings.maxDistanceInPixels ||
+				pointer.position.x < this.x - this.settings.maxDistanceInPixels ||
+				pointer.position.y > this.y + this.settings.maxDistanceInPixels ||
+				pointer.position.y < this.y - this.settings.maxDistanceInPixels
+				)) {
+				return;
+			}
+
 			this.pointer = pointer;
 
-			this.imageGroup.forEach(function (e) {
-				e.visible=true;
-				e.bringToTop();
-
-				e.cameraOffset.x=this.input.worldX;
-				e.cameraOffset.y=this.input.worldY;
-
-			}, this);
+			if(!this.fixedToPosition) {
+				this.showCompass();
+			}
 
 			this.preUpdate=setDirection.bind(this);
 
 			initialPoint=this.pointer.position.clone();
 		}
 	};
-	var removeCompass = function (pointer) {
+	var disconnectCompass = function (pointer) {
 		if(pointer === this.pointer) {
 			this.pointer = null;
-			this.imageGroup.forEach(function(e){
-				e.visible = false;
-			});
+
+			if(this.fixedToPosition) {
+				this.imageGroup.forEach(function(e){
+					e.cameraOffset.x = this.x;
+					e.cameraOffset.y = this.y;
+				}, this);
+			} else {
+				this.hideCompass();
+			}
 
 			this.cursors.up = false;
 			this.cursors.down = false;
@@ -142,7 +186,7 @@
 			this.preUpdate=empty;
 		}
 	};
-	
+
 	var empty = function(){
 	};
 
@@ -180,8 +224,8 @@
 		this.cursors.right = (deltaX > 0);
 		
 		this.imageGroup.forEach(function(e,i){
-			e.cameraOffset.x = initialPoint.x+(deltaX)*i/(this.imageGroup.length-1);
-			e.cameraOffset.y = initialPoint.y+(deltaY)*i/(this.imageGroup.length-1);
+			e.cameraOffset.x = (this.fixedToPosition ? this.x : initialPoint.x) + deltaX * i / (this.imageGroup.length - 1);
+			e.cameraOffset.y = (this.fixedToPosition ? this.y : initialPoint.y) + deltaY * i / (this.imageGroup.length - 1);
 		}, this);
 		
 	};

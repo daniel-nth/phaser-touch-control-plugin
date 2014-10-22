@@ -34,11 +34,6 @@
 
     BasicGame.Game.prototype = {
         create: function () {
-
-            // Pass the image keys to the plugin. The segment is optional. Atlases in the form ['key', 'frame'] should work
-            this.game.touchControl = this.game.plugins.add(Phaser.Plugin.TouchControl, 'compass', 'touch', 'touch_segment');
-            this.game.touchControl.inputEnable();
-
             this.tilesprite = this.add.tileSprite(0, 0, this.world.width, this.world.height, 'background');
             this.tilesprite.scale.set(3);
             this.character = this.add.sprite(this.world.centerX, this.world.centerY, 'character');
@@ -90,6 +85,10 @@
 
             this.directionsText = this.add.text(20, 740, '', style);
             this.velocityText = this.add.text(200, 740, '', style);
+
+            // Pass the image keys to the plugin. The segment is optional. Atlases in the form ['key', 'frame'] should work.
+            this.game.touchControl = this.game.plugins.add(Phaser.Plugin.TouchControl, 'compass', 'touch', 'touch_segment');
+            this.game.touchControl.inputEnable(this.game.width / 2, this.game.height / 2);
         },
         updateDebugText: function(){
             this.directionsText.setText('directions: {\n  up: ' + this.game.touchControl.cursors.up +

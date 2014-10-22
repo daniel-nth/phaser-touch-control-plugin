@@ -34,7 +34,7 @@
 	/**
 	  * TouchControl Plugin for Phaser
 	  */
-	Phaser.Plugin.TouchControl = function (game, parent) {
+	Phaser.Plugin.TouchControl = function(game, parent) {
 		/* Extend the plugin */
 		Phaser.Plugin.call(this, game, parent);
 		this.input = this.game.input;
@@ -83,10 +83,10 @@
 			this.imageGroup.push(this.game.add.image(0, 0, touchImage));
 		}
 
-		this.imageGroup.forEach(function (e) {
+		this.imageGroup.forEach(function(e) {
 			e.anchor.set(0.5);
-			e.visible=false;
-			e.fixedToCamera=true;
+			e.visible = false;
+			e.fixedToCamera = true;
 		});
 
 	};
@@ -96,7 +96,7 @@
 	};
 
 	Phaser.Plugin.TouchControl.prototype.speed = {
-		x:0, y:0
+		x: 0, y: 0
 	};
 
 	Phaser.Plugin.TouchControl.prototype.inputEnable = function(x, y) {
@@ -118,7 +118,7 @@
 	};
 
 	Phaser.Plugin.TouchControl.prototype.showCompass = function() {
-		this.imageGroup.forEach(function (e) {
+		this.imageGroup.forEach(function(e) {
 			e.visible = true;
 			e.bringToTop();
 
@@ -134,13 +134,13 @@
 	};
 
 	Phaser.Plugin.TouchControl.prototype.hideCompass = function() {
-		this.imageGroup.forEach(function(e){
+		this.imageGroup.forEach(function(e) {
 			e.visible = false;
 		});
 	};
 
 	var initialPoint;
-	var connectCompass = function(pointer){
+	var connectCompass = function(pointer) {
 		if(!this.pointer) {
 			if(this.fixedToPosition && (
 				pointer.position.x > this.x + this.settings.maxDistanceInPixels ||
@@ -157,17 +157,17 @@
 				this.showCompass();
 			}
 
-			this.preUpdate=setDirection.bind(this);
+			this.preUpdate = setDirection.bind(this);
 
-			initialPoint=this.pointer.position.clone();
+			initialPoint = this.pointer.position.clone();
 		}
 	};
-	var disconnectCompass = function (pointer) {
+	var disconnectCompass = function(pointer) {
 		if(pointer === this.pointer) {
 			this.pointer = null;
 
 			if(this.fixedToPosition) {
-				this.imageGroup.forEach(function(e){
+				this.imageGroup.forEach(function(e) {
 					e.cameraOffset.x = this.x;
 					e.cameraOffset.y = this.y;
 				}, this);
@@ -183,39 +183,39 @@
 			this.speed.x = 0;
 			this.speed.y = 0;
 
-			this.preUpdate=empty;
+			this.preUpdate = empty;
 		}
 	};
 
-	var empty = function(){
+	var empty = function() {
 	};
 
 	var setDirection = function() {
-		var d=initialPoint.distance(this.pointer.position);
+		var d = initialPoint.distance(this.pointer.position);
 		var maxDistanceInPixels = this.settings.maxDistanceInPixels;
 
-		var deltaX=this.pointer.position.x-initialPoint.x;
-		var deltaY=this.pointer.position.y-initialPoint.y;
+		var deltaX = this.pointer.position.x - initialPoint.x;
+		var deltaY = this.pointer.position.y - initialPoint.y;
 
-		if(this.settings.singleDirection){
-			if(Math.abs(deltaX) > Math.abs(deltaY)){
+		if(this.settings.singleDirection) {
+			if(Math.abs(deltaX) > Math.abs(deltaY)) {
 				deltaY = 0;
-				this.pointer.position.y=initialPoint.y;
+				this.pointer.position.y = initialPoint.y;
 			}else{
 				deltaX = 0;
-				this.pointer.position.x=initialPoint.x;
+				this.pointer.position.x = initialPoint.x;
 			}
 		}
 		var angle = initialPoint.angle(this.pointer.position);
 		
 		
-		if(d>maxDistanceInPixels){
+		if(d > maxDistanceInPixels) {
 			deltaX = Math.cos(angle) * maxDistanceInPixels;
 			deltaY = Math.sin(angle) * maxDistanceInPixels;
 		}
 
-		this.speed.x = parseInt((deltaX/maxDistanceInPixels) * 100 * -1, 10);
-		this.speed.y = parseInt((deltaY/maxDistanceInPixels)*100 * -1, 10);
+		this.speed.x = parseInt((deltaX / maxDistanceInPixels) * 100 * -1, 10);
+		this.speed.y = parseInt((deltaY / maxDistanceInPixels) * 100 * -1, 10);
 
 		
 		this.cursors.up = (deltaY < 0);
@@ -223,13 +223,13 @@
 		this.cursors.left = (deltaX < 0);
 		this.cursors.right = (deltaX > 0);
 		
-		this.imageGroup.forEach(function(e,i){
+		this.imageGroup.forEach(function(e, i) {
 			e.cameraOffset.x = (this.fixedToPosition ? this.x : initialPoint.x) + deltaX * i / (this.imageGroup.length - 1);
 			e.cameraOffset.y = (this.fixedToPosition ? this.y : initialPoint.y) + deltaY * i / (this.imageGroup.length - 1);
 		}, this);
 		
 	};
+
 	Phaser.Plugin.TouchControl.prototype.preUpdate = empty;
 
-	
 }(window, Phaser));

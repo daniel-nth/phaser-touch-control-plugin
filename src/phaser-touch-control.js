@@ -44,9 +44,7 @@
 
 		this.imageGroup = [];
 
-		this.fixedToPosition = false;
-		this.x = null;
-		this.y = null;
+		this.fixedPosition = null;
 	};
 
 	//Extends the Phaser.Plugin template, setting up values we need
@@ -100,12 +98,11 @@
 	};
 
 	Phaser.Plugin.TouchControl.prototype.inputEnable = function(x, y) {
-		this.x = x;
-		this.y = y;
-		this.fixedToPosition = this.x !== null && this.y !== null;
-
-		if(this.fixedToPosition) {
+		if(typeof x == 'number' && typeof y == 'number') {
+			this.fixedPosition = new Phaser.Point(x, y);
 			this.showCompass();
+		} else {
+			this.fixedPosition = null;
 		}
 
 		this.input.onDown.add(connectCompass, this);
@@ -123,8 +120,8 @@
 			e.bringToTop();
 
 			if(this.x !== null && this.y !== null) {
-				e.cameraOffset.x = this.x;
-				e.cameraOffset.y = this.y;
+				e.cameraOffset.x = this.fixedPosition.x;
+				e.cameraOffset.y = this.fixedPosition.y;
 			} else if(this.pointer) {
 				e.cameraOffset.x = this.pointer.worldX;
 				e.cameraOffset.y = this.pointer.worldY;
@@ -139,37 +136,39 @@
 		});
 	};
 
-	var initialPoint;
+	var initialPoint = new Phaser.Point();
 	var connectCompass = function(pointer) {
 		if(!this.pointer) {
-			if(this.fixedToPosition && (
-				pointer.position.x > this.x + this.settings.maxDistanceInPixels ||
-				pointer.position.x < this.x - this.settings.maxDistanceInPixels ||
-				pointer.position.y > this.y + this.settings.maxDistanceInPixels ||
-				pointer.position.y < this.y - this.settings.maxDistanceInPixels
+			if(this.fixedPosition && (
+				pointer.position.x > this.fixedPosition.x + this.settings.maxDistanceInPixels ||
+				pointer.position.x < this.fixedPosition.x - this.settings.maxDistanceInPixels ||
+				pointer.position.y > this.fixedPosition.y + this.settings.maxDistanceInPixels ||
+				pointer.position.y < this.fixedPosition.y - this.settings.maxDistanceInPixels
 				)) {
 				return;
 			}
 
 			this.pointer = pointer;
 
-			if(!this.fixedToPosition) {
+			if(this.fixedPosition) {
+				initialPoint.copyFrom(this.fixedPosition);
+			} else {
+				this.pointer = pointer;
+				initialPoint.copyFrom(this.pointer.position);
 				this.showCompass();
 			}
 
 			this.preUpdate = setDirection.bind(this);
-
-			initialPoint = this.pointer.position.clone();
 		}
 	};
 	var disconnectCompass = function(pointer) {
 		if(pointer === this.pointer) {
 			this.pointer = null;
 
-			if(this.fixedToPosition) {
+			if(this.fixedPosition) {
 				this.imageGroup.forEach(function(e) {
-					e.cameraOffset.x = this.x;
-					e.cameraOffset.y = this.y;
+					e.cameraOffset.x = this.fixedPosition.x;
+					e.cameraOffset.y = this.fixedPosition.y;
 				}, this);
 			} else {
 				this.hideCompass();
@@ -224,8 +223,8 @@
 		this.cursors.right = (deltaX > 0);
 		
 		this.imageGroup.forEach(function(e, i) {
-			e.cameraOffset.x = (this.fixedToPosition ? this.x : initialPoint.x) + deltaX * i / (this.imageGroup.length - 1);
-			e.cameraOffset.y = (this.fixedToPosition ? this.y : initialPoint.y) + deltaY * i / (this.imageGroup.length - 1);
+			e.cameraOffset.x = initialPoint.x + deltaX * i / (this.imageGroup.length - 1);
+			e.cameraOffset.y = initialPoint.y + deltaY * i / (this.imageGroup.length - 1);
 		}, this);
 		
 	};

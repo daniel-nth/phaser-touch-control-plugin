@@ -119,7 +119,7 @@
 			e.visible = true;
 			e.bringToTop();
 
-			if(this.x !== null && this.y !== null) {
+			if(this.fixedPosition !== null) {
 				e.cameraOffset.x = this.fixedPosition.x;
 				e.cameraOffset.y = this.fixedPosition.y;
 			} else if(this.pointer) {

@@ -231,4 +231,13 @@
 
 	Phaser.Plugin.TouchControl.prototype.preUpdate = empty;
 
+	Phaser.Plugin.TouchControl.prototype.destroy = function() {
+		if(this.pointer) {
+			disconnectCompass.call(this, this.pointer);
+		}
+		this.inputDisable();
+
+		Phaser.Plugin.prototype.destroy.call(this);
+	};
+
 }(window, Phaser));

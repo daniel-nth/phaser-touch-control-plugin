@@ -196,6 +196,13 @@
 		var deltaX = this.pointer.position.x - initialPoint.x;
 		var deltaY = this.pointer.position.y - initialPoint.y;
 
+		var angle = initialPoint.angle(this.pointer.position);
+
+		if(d > maxDistanceInPixels) {
+			deltaX = Math.cos(angle) * maxDistanceInPixels;
+			deltaY = Math.sin(angle) * maxDistanceInPixels;
+		}
+
 		if(this.settings.singleDirection) {
 			if(Math.abs(deltaX) > Math.abs(deltaY)) {
 				deltaY = 0;
@@ -204,13 +211,6 @@
 				deltaX = 0;
 				this.pointer.position.x = initialPoint.x;
 			}
-		}
-		var angle = initialPoint.angle(this.pointer.position);
-		
-		
-		if(d > maxDistanceInPixels) {
-			deltaX = Math.cos(angle) * maxDistanceInPixels;
-			deltaY = Math.sin(angle) * maxDistanceInPixels;
 		}
 
 		this.speed.x = parseInt((deltaX / maxDistanceInPixels) * 100 * -1, 10);
